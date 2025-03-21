@@ -1,0 +1,10 @@
+name: pac_man_game_env
+channels:
+  - defaults
+  - conda-forge
+dependencies:
+  - python=3.12
+  - pip
+  - pip:
+      - pygame 
+      

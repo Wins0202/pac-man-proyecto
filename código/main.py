@@ -9,17 +9,12 @@ import pygame #Libreria con la que programa el juego.
 import sys #Cuando se cierre la ventana deje de correr la aplicación.
 
 from config import * #Importación de la librería creada para las configuraciones
-
 """Para la correcta importación de la librería se tiene que descargar con el comando 
 "pip install pygame" y se procederá a descargar la librería para su uso"""
 
 
 """Este conjunto de líneas sirve para que se inicie el juego. Definiremos las funciones para el
 control básico del juego"""
-
-"""Configuración de la ventana donde se va a visualizar el juego"""
-
-
 #Definición de variables:
 
 class Game:
