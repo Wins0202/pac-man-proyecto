@@ -1,6 +1,8 @@
 """ -------------------------------------------------------------------------
     ||||||Configuración de la ventana donde se va a visualizar el juego||||||
     -------------------------------------------------------------------------"""
+import pygame   #Librería de programación de juegos
+import os       #Librería para trabajar con el sistema operativo
 
 #Definción del tamaño de la pantalla:
 width = 800     #Ancho de la ventana
@@ -18,3 +20,6 @@ amarillo = (255, 195, 0)    #Color del Pac-man
 tamañoPersonaje = 30    #Tamaño en pixeles que tiene Pac-man
 velocidadPersonaje = 5  #Velocidad de movimiento del personaje
 
+#Función para cargar imágenes
+def cargarImagen (name):
+    return pygame.image.load (os.path.join("assets", "images", name)).convert_alpha()
