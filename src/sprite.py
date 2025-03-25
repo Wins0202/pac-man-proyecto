@@ -18,14 +18,14 @@ class Player:
 
         #Cargar imagen de pacman
         self.sprite_sheet = cargarImagen ("PacMan.png") #Carga una imagen desde la carpeta sprite
+ 
+        #Obtener el primer frame (mirando hacia la derecha)
+        self.image = pygame.Surface ((16, 16), pygame.SRCALPHA) #size: 16x16 tamaño de la imagen y uso de transparencia en la imagen y no le coloque un fondo
+        self.image.blit (self.sprite_sheet, dest=(0, 0), area=(0, 0, 16, 16))   # Se toma el primer frame desde la coordeada 0 de la imagen se obtiene el primer frame y los que les sigue
+        self.image = pygame.transform.scale(self.image, size=(tamañoPersonaje, tamañoPersonaje)) #Coloca a imagen a la escala que previamente habiamos definido 
 
         #Creación del espacio-rectángulo del jugador:
-        self.rect = pygame.Rect(      
-            self.x - tamañoPersonaje // 2,  #Centro del rectángulo en la cordena "x" menos el tamaño divido entre 2
-            self.x - tamañoPersonaje // 2,  #Centro del rectángulo en la cordena "y" menos el tamaño divido entre 2
-            tamañoPersonaje,
-            tamañoPersonaje
-        )   
+        self.rect = self.image.get_rect(center=(self.x, self.y))   #Se centrará en el eje "x" e "y" 
 
     def move (self, dx, dy):    
         #Movimiento del pac-man según la entrada el jugador
@@ -51,8 +51,7 @@ class Player:
 
     def draw(self, screen):
         #Dibujar al pac-man en pantalla:
-        pygame.draw.rect (screen, amarillo, self.rect)
-
+        screen.blit (self.image, self.rect) #El dibujo será rectángular pero tendrá la imagen agregada
 
 
 
