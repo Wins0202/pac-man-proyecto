@@ -20,12 +20,19 @@ class Player:
         self.sprite_sheet = cargarImagen ("PacMan.png") #Carga una imagen desde la carpeta sprite
  
         #Obtener el primer frame (mirando hacia la derecha)
-        self.image = pygame.Surface ((16, 16), pygame.SRCALPHA) #size: 16x16 tamaño de la imagen y uso de transparencia en la imagen y no le coloque un fondo
-        self.image.blit (self.sprite_sheet, dest=(0, 0), area=(0, 0, 16, 16))   # Se toma el primer frame desde la coordeada 0 de la imagen se obtiene el primer frame y los que les sigue
-        self.image = pygame.transform.scale(self.image, size=(tamañoPersonaje, tamañoPersonaje)) #Coloca a imagen a la escala que previamente habiamos definido 
+        self.originalmagen = pygame.Surface ((16, 16), pygame.SRCALPHA) #size: 16x16 tamaño de la imagen y uso de transparencia en la imagen y no le coloque un fondo
+        self.originalmagen.blit (self.sprite_sheet, dest=(0, 0), area=(96, 0, 16, 16))   # Se toma el septimo frame de la imagen 6*16=96 en el eje "x" y 0 e el eje "y"
+        self.originalmagen = pygame.transform.scale(self.originalmagen, size=(tamañoPersonaje, tamañoPersonaje)) #Coloca a imagen a la escala que previamente habiamos definido 
+
+        #Imagen actual del jugador
+        self.image = self.originalmagen     #Cuando se vaya a la derecha se quede la imagen original
 
         #Creación del espacio-rectángulo del jugador:
-        self.rect = self.image.get_rect(center=(self.x, self.y))   #Se centrará en el eje "x" e "y" 
+        self.rect = self.image.get_rect(center=(self.x, self.y))   #Se centrará en el eje "x" e "y" la imagen que se le definió el tamaño
+
+        #Dirección actual (0: derecha, 1: izquierda)
+        self.direction = 0   #Predetermina que cuando empieze el juego se mueva a la derecha
+        self.flipped = False #La imagen no va a estar volteada 
 
     def move (self, dx, dy):    
         #Movimiento del pac-man según la entrada el jugador
@@ -49,6 +56,26 @@ class Player:
         #Actualizar el rectángulo:
         self.rect.center = (self.x, self.y) #el nuevo "self.x y" el nuevo "self.y" es la nueva posición
 
+        #Actualizar imagen en el movimiento:
+            #Movimiento en horizontal
+        if dx > 0 and self.direction != 0:    #Si la dirección es distinta de 0
+            self.direction = 0                #Irá a la derecha
+            self.image = self.originalmagen   #La imagen será la original
+            self.flipped = False              #No se girará la imagen
+        elif dx < 0 and self.direction != 1:    #Si la dirección es distinta de 1
+            self.direction = 1                  #Irá a la izquierda
+            self.image = pygame.transform.flip (self.image, flip_x=True, flip_y=False)  #La imagen que se mostrará será volteada
+            self.flipped = True                 #Se volteará la imagen
+
+         #Movimiento en vertical:
+        elif dy < 0 and self.direction != 2:    #Si se dirige hacia arriba
+            self.direction = 2      
+            self.image = pygame.transform.rotate (self.originalmagen, angle = 90)   #Se girará la imagen 90 grados
+            self.flipped = True
+        elif dy > 0 and self.direction != 3:    #Si se dirige hacia abajo
+            self.image = pygame.transform.rotate (self.originalmagen, angle = -90)  #Se girará la imagen -90 grados
+            self.flipped = True
+            
     def draw(self, screen):
         #Dibujar al pac-man en pantalla:
         screen.blit (self.image, self.rect) #El dibujo será rectángular pero tendrá la imagen agregada
