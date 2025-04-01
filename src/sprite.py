@@ -8,6 +8,17 @@ from config import *
 import pygame
 
 
+"""Sirve para definir las acciones que puede realizar o que le pueden ocurrir a las paredes"""
+class Wall:
+    def __init__(self, x, y):
+        self.rect = pygame.Rect (x * celdaTamaño, y * celdaTamaño, celdaTamaño, celdaTamaño) #Definición del tamaño de la celda dentro de la pantalla de juego
+
+    def draw (self, screen):
+        #Dibujar la pared en la pantalla
+        pygame.draw.rect(screen, colorPared, self.rect)
+
+
+
 
 """Sirve para definir las acciones que puede realizar o que le pueden ocurrir al jugador"""
 class Player:
@@ -19,27 +30,91 @@ class Player:
         #Cargar imagen de pacman
         self.sprite_sheet = cargarImagen ("PacMan.png") #Carga una imagen desde la carpeta sprite
  
-        #Obtener el primer frame (mirando hacia la derecha)
-        self.originalmagen = pygame.Surface ((16, 16), pygame.SRCALPHA) #size: 16x16 tamaño de la imagen y uso de transparencia en la imagen y no le coloque un fondo
-        self.originalmagen.blit (self.sprite_sheet, dest=(0, 0), area=(96, 0, 16, 16))   # Se toma el septimo frame de la imagen 6*16=96 en el eje "x" y 0 e el eje "y"
-        self.originalmagen = pygame.transform.scale(self.originalmagen, size=(tamañoPersonaje, tamañoPersonaje)) #Coloca a imagen a la escala que previamente habiamos definido 
+        #Cargar todos los frames para animar:
+        self.framesAnimados = []
+        for i in range (numeroFrames):
+            #Creación de superficie para los frames
+            frame = pygame.Surface ((16, 16), pygame.SRCALPHA)
+            #Copiar el frame del sprite sheet:
+            frame.blit(self.sprite_sheet, dest = (0, 0), area =(i * 16, 0, 16, 16)) #Dependiendo de lo que valga "i" tomará la imagen del sprite y se multiplicará para dar tamaño
+            #Poner a escala la imagen:
+            frame = pygame.transform.scale (frame, size = (tamañoPersonaje, tamañoPersonaje))   #Se ponen a escala todos los frames
+            self.framesAnimados.append (frame) #Se le agrega a la variable "framesAnimados" la variable "frame"
 
+        #Variables de la animación:
+        self.frameActual = 0    #El frame "0" será la primera imagen del "sprite sheet"
+        self.timerAnimacion = pygame.time.get_ticks () #Cuando llegue a los 100 milisegundos se cambien al siguiente frame
+        self.movimiento = False #Para que no cambie de frame cuando esté quieto
+    
         #Imagen actual del jugador
-        self.image = self.originalmagen     #Cuando se vaya a la derecha se quede la imagen original
+        self.originalImagen = self.framesAnimados [0]  #Cuando se vaya a la derecha se quede la imagen original
+        self.image = self.originalImagen
 
         #Creación del espacio-rectángulo del jugador:
         self.rect = self.image.get_rect(center=(self.x, self.y))   #Se centrará en el eje "x" e "y" la imagen que se le definió el tamaño
 
-        #Dirección actual (0: derecha, 1: izquierda)
-        self.direction = 0   #Predetermina que cuando empieze el juego se mueva a la derecha
-        self.flipped = False #La imagen no va a estar volteada 
+        #Dirección actual:
+        self.direction = derecha   #Predetermina que cuando empieze el juego se mueva a la derecha
+        
+        #Deltas:
+        self.dx = 0
+        self.dy = 0
 
-    def move (self, dx, dy):    
-        #Movimiento del pac-man según la entrada el jugador
-            #Actualizar la posición:
-        self.x += dx * velocidadPersonaje  #Coordenada del eje "x" se le suma el delta"x"(dx) por la velocidad del jugador
-        self.y += dy * velocidadPersonaje  #Coordenada del eje "x" se le suma el delta"y"(dy) por la velocidad del jugador
+    def update_animation (self):
+        #Actualiza el frame de animación:
+        if not self.movimiento:     #Si no está en movimiento no se debe mover
+            self.frameActual = 0
+            return
 
+        tiempoActual = pygame.time.get_ticks ()
+        if tiempoActual - self.timerAnimacion > velocidadAnimacion: #mayor a 100 milisegundos
+            self.frameActual =(self.frameActual + 1) % numeroFrames
+            self.timerAnimacion = tiempoActual
+
+    def update_image (self):
+       #Actualizar la imagen según la dirección y frame
+            #Obtener frame actual:
+        self.originalImagen = self.framesAnimados [self.frameActual] 
+
+        #Actualizar imagen en el movimiento:
+            #Movimiento en horizontal
+        if self.dx > 0:    #Si la dirección es distinta de 0
+            self.direction = derecha                #Irá a la derecha
+            self.image = self.originalImagen   #La imagen será la original
+        elif self.dx < 0:    #Si la dirección es distinta de 1
+            self.direction = izquierda                  #Irá a la izquierda
+            self.image = pygame.transform.flip (self.originalImagen, flip_x=True, flip_y=False)  #La imagen que se mostrará será volteada
+
+         #Movimiento en vertical:
+        elif self.dy < 0:    #Si se dirige hacia arriba
+            self.direction = arriba      
+            self.image = pygame.transform.rotate (self.originalImagen, angle = 90)   #Se girará la imagen 90 grados
+        elif self.dy > 0:    #Si se dirige hacia abajo
+            self.direction = abajo
+            self.image = pygame.transform.rotate (self.originalImagen, angle = -90)  #Se girará la imagen -90 grados
+
+    def move (self, walls):    
+        #Movimiento del pac-man según la entrada del jugador
+        #Guardar la posición anterior 
+        antX = self.x
+        antY = self.y
+
+         #Actualizar la posición:
+        self.x += self.dx  #Coordenada del eje "x" se le suma el delta"x"(dx) por la velocidad del jugador
+        self.y += self.dy  #Coordenada del eje "x" se le suma el delta"y"(dy) por la velocidad del jugador
+
+        #Actualizar el rectángulo:
+        self.rect.center = (self.x, self.y) #el nuevo "self.x y" el nuevo "self.y" es la nueva posición
+
+        #Comprobación de colisión con paredes
+        for wall in walls:
+            if self.rect.colliderect(wall.rect):   
+                 #Si hay una colisión, volver a la posición anterior
+                 self.x = antX
+                 self.y = antY
+                 self.rect.center = (self.x, self.y)
+                 break
+            
         #Mantener al jugador dentro de la pantalla:
             #Moviemiento horizontal
         if self.x > width - tamañoPersonaje: 
@@ -53,29 +128,33 @@ class Player:
         elif self.y < 0:
             self.y = height - tamañoPersonaje   #Si el personaje sale por arriba entrará por abajo
 
-        #Actualizar el rectángulo:
-        self.rect.center = (self.x, self.y) #el nuevo "self.x y" el nuevo "self.y" es la nueva posición
 
-        #Actualizar imagen en el movimiento:
-            #Movimiento en horizontal
-        if dx > 0 and self.direction != 0:    #Si la dirección es distinta de 0
-            self.direction = 0                #Irá a la derecha
-            self.image = self.originalmagen   #La imagen será la original
-            self.flipped = False              #No se girará la imagen
-        elif dx < 0 and self.direction != 1:    #Si la dirección es distinta de 1
-            self.direction = 1                  #Irá a la izquierda
-            self.image = pygame.transform.flip (self.image, flip_x=True, flip_y=False)  #La imagen que se mostrará será volteada
-            self.flipped = True                 #Se volteará la imagen
+    def handle_input (self):
+        #Unir la entrada del usuario con velocidad actualizada
+        keys = pygame.key.get_pressed ()
 
-         #Movimiento en vertical:
-        elif dy < 0 and self.direction != 2:    #Si se dirige hacia arriba
-            self.direction = 2      
-            self.image = pygame.transform.rotate (self.originalmagen, angle = 90)   #Se girará la imagen 90 grados
-            self.flipped = True
-        elif dy > 0 and self.direction != 3:    #Si se dirige hacia abajo
-            self.image = pygame.transform.rotate (self.originalmagen, angle = -90)  #Se girará la imagen -90 grados
-            self.flipped = True
+        #Reiniciar la velocidad
+        self.dx = 0
+        self.dy = 0
+
+        #Actualiza las funciones del juego según las teclas presionadas
+        if keys []       
+       
+       
+        keys = pygame.key.get_pressed () #Para saber las teclas que presiona el usuario
+        
+        #Calcula el moviento según las teclas presionadas
+        dx = keys[pygame.K_RIGHT] - keys[pygame.K_LEFT]    #Delta "x" es la diferencia entre tecla "derecha" menos tecla "izquierda"
+        dy = keys[pygame.K_DOWN] - keys[pygame.K_UP]    #Delta "y" es la diferencia entre tecla "abajo" menos tecla "arriba"
+
+        #Actualizar el estado de movimiento:
+        self.movimiento = self.dx != 0 or self.dy != 0      #El movimiento será verdadero
             
+    def update (self, walls):
+        self.update_animation ()    #Actualizar animación
+        self.update_image ()        #Actualizar imagen
+        self.move (walls)           #Se actualiza el juagador y las paredes 
+
     def draw(self, screen):
         #Dibujar al pac-man en pantalla:
         screen.blit (self.image, self.rect) #El dibujo será rectángular pero tendrá la imagen agregada

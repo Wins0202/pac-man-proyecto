@@ -37,7 +37,18 @@ class Game:
         self.running = True
 
         #Se crea al jugador:
-        self.player = Player() 
+        self.walls = []
+        self.player = None 
+        self.create_level = ()
+
+    def create_level(self):
+        #Creación del nivel a partir del diseño en "config"
+        for row_index, cell in enumerate (nivel):       #Ennumerar filas
+            for col_index, cell in enumerate(row):      #Ennumerar columnas
+                if cell == "1":
+                    self.walls.append (Wall(col_index, row_index))  #Cuando en la celda sea "1" se crea una pared
+                elif cell == "P":
+                    self.player = Player(col_index, row_index)       #Cuando en la celda sea "P" se crea el jugador
 
     def handleEvents (self):
         #Manejar los eventos (función de las teclas en pygame)
@@ -47,15 +58,11 @@ class Game:
                 self.running = False #Es decir, se cambia la varible True 'Linea31' a False
 
     def update(self): 
-        #Actualiza las funciones del juego según las teclas presionadas
-        keys = pygame.key.get_pressed () #Para saber las teclas que presiona el usuario
-        
-        #Calcula el moviento según las teclas presionadas
-        dx = keys[pygame.K_RIGHT] - keys[pygame.K_LEFT]    #Delta "x" es la diferencia entre tecla "derecha" menos tecla "izquierda"
-        dy = keys[pygame.K_DOWN] - keys[pygame.K_UP]    #Delta "y" es la diferencia entre tecla "abajo" menos tecla "arriba"
-
         #Mover el jugador:
         self.player.move(dx, dy)
+
+        #Actualizar al jugador
+        self.player.update ()
 
 
     def draw(self): #Dibujar los elementos en la pantalla
