@@ -11,7 +11,8 @@ import pygame
 """Sirve para definir las acciones que puede realizar o que le pueden ocurrir a las paredes"""
 class Wall:
     def __init__(self, x, y):
-        self.rect = pygame.Rect (x * celdaTamaño, y * celdaTamaño, celdaTamaño, celdaTamaño) #Definición del tamaño de la celda dentro de la pantalla de juego
+        #Definición del tamaño de la celda dentro de la pantalla de juego
+        self.rect = pygame.Rect (x * celdaTamaño, y * celdaTamaño, celdaTamaño, celdaTamaño) 
 
     def draw (self, screen):
         #Dibujar la pared en la pantalla
@@ -22,10 +23,10 @@ class Wall:
 
 """Sirve para definir las acciones que puede realizar o que le pueden ocurrir al jugador"""
 class Player:
-    def __init__(self):
+    def __init__(self, x, y):
         #Posición inicial del jugador (centro de la pantalla):
-        self.x = width // 2     #En el eje "x" el personaje está a la mitad del eje
-        self.y = height // 2    #En el eje "y" el personaje está a la mitad del eje
+        self.x = x * celdaTamaño + celdaTamaño // 2     #En el eje "x" el personaje está a la mitad del eje
+        self.y = y * celdaTamaño + celdaTamaño // 2    #En el eje "y" el personaje está a la mitad del eje
 
         #Cargar imagen de pacman
         self.sprite_sheet = cargarImagen ("PacMan.png") #Carga una imagen desde la carpeta sprite
@@ -60,7 +61,7 @@ class Player:
         self.dx = 0
         self.dy = 0
 
-    def update_animation (self):
+    def updateAnimation (self):
         #Actualiza el frame de animación:
         if not self.movimiento:     #Si no está en movimiento no se debe mover
             self.frameActual = 0
@@ -71,7 +72,7 @@ class Player:
             self.frameActual =(self.frameActual + 1) % numeroFrames
             self.timerAnimacion = tiempoActual
 
-    def update_image (self):
+    def updateImage (self):
        #Actualizar la imagen según la dirección y frame
             #Obtener frame actual:
         self.originalImagen = self.framesAnimados [self.frameActual] 
@@ -109,11 +110,11 @@ class Player:
         #Comprobación de colisión con paredes
         for wall in walls:
             if self.rect.colliderect(wall.rect):   
-                 #Si hay una colisión, volver a la posición anterior
-                 self.x = antX
-                 self.y = antY
-                 self.rect.center = (self.x, self.y)
-                 break
+                #Si hay una colisión, volver a la posición anterior
+                self.x = antX
+                self.y = antY
+                self.rect.center = (self.x, self.y)
+                break
             
         #Mantener al jugador dentro de la pantalla:
             #Moviemiento horizontal
@@ -129,7 +130,7 @@ class Player:
             self.y = height - tamañoPersonaje   #Si el personaje sale por arriba entrará por abajo
 
 
-    def handle_input (self):
+    def handleInput (self):
         #Unir la entrada del usuario con velocidad actualizada
         keys = pygame.key.get_pressed ()
 
@@ -138,22 +139,48 @@ class Player:
         self.dy = 0
 
         #Actualiza las funciones del juego según las teclas presionadas
-        if keys []       
-       
-       
-        keys = pygame.key.get_pressed () #Para saber las teclas que presiona el usuario
-        
-        #Calcula el moviento según las teclas presionadas
-        dx = keys[pygame.K_RIGHT] - keys[pygame.K_LEFT]    #Delta "x" es la diferencia entre tecla "derecha" menos tecla "izquierda"
-        dy = keys[pygame.K_DOWN] - keys[pygame.K_UP]    #Delta "y" es la diferencia entre tecla "abajo" menos tecla "arriba"
+            #Si la tecla es presionada a la derecha
+        if keys [pygame.K_RIGHT]:
+            self.dx = velocidadPersonaje
+            self.direction = derecha
+            #Si la tecla es presionada a la izquierda
+        elif keys[pygame.K_LEFT]:
+            self.dx = - velocidadPersonaje
+            self.direction = izquierda
+            #Si la tecla es presionada hacia arriba
+        elif keys [pygame.K_UP]:
+            self.dy = - velocidadPersonaje
+            self.direction = arriba
+            #Si la tecla es presionada hacia abajo
+        elif keys [pygame.K_DOWN]:
+            self.dy = velocidadPersonaje
+            self.direction = abajo
 
         #Actualizar el estado de movimiento:
-        self.movimiento = self.dx != 0 or self.dy != 0      #El movimiento será verdadero
+        self.movimiento = self.dx != 0 or self.dy != 0      #Se está moviendo si cualquiera de los deltas es distinto a 0
             
+    def checkCollision (self, walls, dx=0, dy=0):
+        #Comprobar si hay colisión en una posición futura
+            #Creación de rectángulo temporal en la posición futura
+            futuroRect = self.rect.copy()   #Es una copia del rect que ya se tiene
+            futuroRect.x += dx
+            futuroRect.y += dy 
+
+        #Comprobar colisión con cada pared
+            for wall in walls:
+                #Si el rect colisiona con alguna pared
+                if futuroRect.colliderect (wall.rect):
+                    return True
+            return False
+        
+    
+
+
     def update (self, walls):
-        self.update_animation ()    #Actualizar animación
-        self.update_image ()        #Actualizar imagen
-        self.move (walls)           #Se actualiza el juagador y las paredes 
+        self.handleInput ()
+        self.updateAnimation ()    #Actualizar animación
+        self.updateImage ()        #Actualizar imagen
+        self.move (walls)           #Se actualiza el jugador y las paredes 
 
     def draw(self, screen):
         #Dibujar al pac-man en pantalla:

@@ -17,10 +17,43 @@ amarillo = (255, 195, 0)    #Color del Pac-man
 
 
 #Configuración del jugador
-tamañoPersonaje = 30     #Tamaño en pixeles que tiene Pac-man
+tamañoPersonaje = 24     #Tamaño en pixeles que tiene Pac-man
 velocidadPersonaje = 5   #Velocidad de movimiento del personaje
 velocidadAnimacion = 50 #Velocidad de animación de 100 milisegundos entre cada frame
 numeroFrames = 8         #Número total de frames en el sprite
+
+
+#Configuración de las paredes
+celdaTamaño = 32            #Tamaño de cada celda del laberinto
+colorPared = (131, 185, 255)  #Color rosa para las paredes
+
+
+#Configuración de las colisiones
+toleranciaColision = 4  #Pixeles de tolerancia para colisiones
+deslizamiento = 2       #Velocidad de deslizamiento en las paredes
+
+nivel = [
+    "1111111111111101111111111",
+    "1000000000000000000000001",
+    "1011111111101010000111101",
+    "1000000001111111100000001",
+    "1011100000000001111111101",
+    "1000111110001110000000001",         #Tiene una P porque es el punto de partida
+    "1011110000111100010111101",
+    "0000000000000000000000000",
+    "1011111000000001111111101",
+    "1000000111010101000000001",
+    "1111111111110000000111111",
+    "1000111110001110000000001",        
+    "1011110000111100010111101",
+    "10000000000P0000000000001",
+    "1011111000000001111111101",
+    "1000000111010101000000001",
+    "1000000111010101000000001",
+    "1111110000000000000111111",
+    "1111111111111101111111111"
+    ]
+
 
 #Función para cargar imágenes
 def cargarImagen (name):
@@ -32,20 +65,4 @@ izquierda = 1
 arriba = 2
 abajo = 3
 
-#Configuración de las paredes
-celdaTamaño = 32            #Tamaño de cada celda del laberinto
-colorPared = (250, 0, 255)  #Color rosa para las paredes
 
-nivel = [
-    "111111111111",
-    "100000000001",
-    "101111111101",
-    "100000000001",
-    "101111111101",
-    "100P00000001",         #Tiene una P porque es el punto de partida
-    "101111111101",
-    "100000000001",
-    "101111111101",
-    "100000000001",
-    "111111111111"
-]

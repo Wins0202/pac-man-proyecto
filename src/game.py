@@ -38,13 +38,13 @@ class Game:
 
         #Se crea al jugador:
         self.walls = []
-        self.player = None 
-        self.create_level = ()
+        self.player = None
+        self.createLevel ()
 
-    def create_level(self):
+    def createLevel(self):
         #Creación del nivel a partir del diseño en "config"
-        for row_index, cell in enumerate (nivel):       #Ennumerar filas
-            for col_index, cell in enumerate(row):      #Ennumerar columnas
+        for row_index, row in enumerate (nivel):       #Ennumerar filas
+            for col_index, cell in enumerate (row):      #Ennumerar columnas
                 if cell == "1":
                     self.walls.append (Wall(col_index, row_index))  #Cuando en la celda sea "1" se crea una pared
                 elif cell == "P":
@@ -58,16 +58,17 @@ class Game:
                 self.running = False #Es decir, se cambia la varible True 'Linea31' a False
 
     def update(self): 
-        #Mover el jugador:
-        self.player.move(dx, dy)
-
         #Actualizar al jugador
-        self.player.update ()
+        self.player.update (self.walls)
 
 
     def draw(self): #Dibujar los elementos en la pantalla
         #Base de la pantalla de color negro
         self.screen.fill (negro)
+
+        #Dibujar las paredes
+        for wall in self.walls:
+            wall.draw(self.screen)
 
         #Dibuja al jugador:
         self.player.draw(self.screen) 
