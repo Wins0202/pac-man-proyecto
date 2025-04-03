@@ -19,6 +19,43 @@ class Wall:
         pygame.draw.rect(screen, colorPared, self.rect)
 
 
+class Coin:
+    def __init__(self, x, y):
+        #Posición de la moneda 
+        self.x = x * celdaTamaño + celdaTamaño // 2     #En el eje "x" la moneda está a la mitad del eje
+        self.y = y * celdaTamaño + celdaTamaño // 2     #En el eje "y" la moneda está a la mitad del eje
+
+        #Cargar sprite sheet de la moneda
+        self.sprite_sheet = cargarImagen ("Coin.png") #Carga una imagen desde la carpeta sprite
+
+        #Cargar todos los frames para animar:
+        self.frames = []
+        for i in range (monedaFrames):
+            #Creación de superficie para los frames
+            frame = pygame.Surface ((16, 16), pygame.SRCALPHA)
+            #Copiar el frame del sprite sheet:
+            frame.blit(self.sprite_sheet, dest = (0, 0), area =(i * 16, 0, 16, 16)) #Dependiendo de lo que valga "i" tomará la imagen del sprite y se multiplicará para dar tamaño
+            #Poner a escala la imagen:
+            frame = pygame.transform.scale (frame, size = (monedaTamaño, monedaTamaño))   #Se ponen a escala todos los frames
+            self.frames.append (frame) #Se le agrega a la variable "frames" la variable "frame"
+
+        #Variables de la animación:
+        self.frameActual = 0    #El frame "0" será la primera imagen del "sprite sheet"
+        self.timerAnimacion = pygame.time.get_ticks() #Cuando llegue a los 100 milisegundos se cambien al siguiente frame
+        
+        #Rectángulo para colisión
+        self.rect = self.frames [0].get_rect(center=(self.x, self.y))
+
+    def update (self):
+        tiempoActual = pygame.time.get_ticks ()
+        if tiempoActual - self.timerAnimacion > monedaAnimacion: #mayor a 100 milisegundos
+            self.frameActual =(self.frameActual + 1) % monedaFrames
+            self.timerAnimacion = tiempoActual
+
+    def draw (self, screen):
+        #Dibujar la moneda en pantalla
+        screen.blit (self.frames[self.frameActual], self.rect)
+        
 
 
 """Sirve para definir las acciones que puede realizar o que le pueden ocurrir al jugador"""
@@ -26,7 +63,7 @@ class Player:
     def __init__(self, x, y):
         #Posición inicial del jugador (centro de la pantalla):
         self.x = x * celdaTamaño + celdaTamaño // 2     #En el eje "x" el personaje está a la mitad del eje
-        self.y = y * celdaTamaño + celdaTamaño // 2    #En el eje "y" el personaje está a la mitad del eje
+        self.y = y * celdaTamaño + celdaTamaño // 2     #En el eje "y" el personaje está a la mitad del eje
 
         #Cargar imagen de pacman
         self.sprite_sheet = cargarImagen ("PacMan.png") #Carga una imagen desde la carpeta sprite
@@ -158,29 +195,28 @@ class Player:
 
         #Actualizar el estado de movimiento:
         self.movimiento = self.dx != 0 or self.dy != 0      #Se está moviendo si cualquiera de los deltas es distinto a 0
-            
+
+
     def checkCollision (self, walls, dx=0, dy=0):
         #Comprobar si hay colisión en una posición futura
-            #Creación de rectángulo temporal en la posición futura
-            futuroRect = self.rect.copy()   #Es una copia del rect que ya se tiene
-            futuroRect.x += dx
-            futuroRect.y += dy 
+        #Creación de rectángulo temporal en la posición futura
+        futuroRect = self.rect.copy()   #Es una copia del rect que ya se tiene
+        futuroRect.x += dx
+        futuroRect.y += dy 
 
         #Comprobar colisión con cada pared
-            for wall in walls:
-                #Si el rect colisiona con alguna pared
-                if futuroRect.colliderect (wall.rect):
-                    return True
-            return False
+        for wall in walls:
+            if futuroRect.colliderect (wall.rect): #Si el rect colisiona con alguna pared
+                return True
+        return False
         
     
-
-
     def update (self, walls):
         self.handleInput ()
         self.updateAnimation ()    #Actualizar animación
         self.updateImage ()        #Actualizar imagen
         self.move (walls)           #Se actualiza el jugador y las paredes 
+
 
     def draw(self, screen):
         #Dibujar al pac-man en pantalla:

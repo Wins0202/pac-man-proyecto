@@ -36,10 +36,15 @@ class Game:
         #Se crea una variable para el bucle del juego
         self.running = True
 
-        #Se crea al jugador:
+        #Se crea paredes, monedas y jugador:
         self.walls = []
+        self.coins = []
         self.player = None
+        self.score = 0
         self.createLevel ()
+
+        #Fuente para el texto de los puntos
+        self.font = pygame.font.Font (None, 36)
 
     def createLevel(self):
         #Creación del nivel a partir del diseño en "config"
@@ -47,6 +52,8 @@ class Game:
             for col_index, cell in enumerate (row):      #Ennumerar columnas
                 if cell == "1":
                     self.walls.append (Wall(col_index, row_index))  #Cuando en la celda sea "1" se crea una pared
+                elif cell == "0":
+                    self.coins.append (Coin(col_index, row_index))  #Cuando la celdda sea "0" se crean monedas
                 elif cell == "P":
                     self.player = Player(col_index, row_index)       #Cuando en la celda sea "P" se crea el jugador
 
@@ -61,6 +68,12 @@ class Game:
         #Actualizar al jugador
         self.player.update (self.walls)
 
+        #Actualizar monedas y comprobar colisiones
+        for coin in self.coins [:]:     #Usar una copia de la lista para poder modificarla
+            coin.update()
+            if self.player.rect.colliderect (coin.rect):    #Si el jugador colisiona con una moneda
+                self.coins.remove (coin)                    #La moneda se quita de la pantalla
+                self.score += puntoMoneda                   #Se suma el puntaje de esa moneda
 
     def draw(self): #Dibujar los elementos en la pantalla
         #Base de la pantalla de color negro
@@ -70,8 +83,16 @@ class Game:
         for wall in self.walls:
             wall.draw(self.screen)
 
+        #Dibujar las monedas
+        for coin in self.coins:
+            coin.draw (self.screen)
+
         #Dibuja al jugador:
         self.player.draw(self.screen) 
+
+        #Dibujar el puntaje
+        score_text = self.font.render (f"Puntuación: {self.score} pts", True, blanco)
+        self.screen.blit (score_text, dest=(10, 10))
 
         #Actualizar la pantalla
         pygame.display.flip() 
