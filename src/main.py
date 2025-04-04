@@ -17,7 +17,7 @@ def main ():
         pygame.init()
 
         #crear y correr el juego
-        game = Game()
+        game = Game() 
         game.run () #Ejecuta el juego
 
     except Exception as e:  #Se ejecutará el juego excepto si ocurre algún fallo en él

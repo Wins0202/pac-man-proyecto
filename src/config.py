@@ -13,7 +13,9 @@ height = 600    #Altura de la ventana
 """Los colores son tomados del código de colores en RGB"""
 negro = (0, 0, 0)  
 blanco = (255, 255, 255)
-amarillo = (255, 195, 0)    #Color del Pac-man
+amarillo = (255, 195, 0)   
+rojo = (255, 11, 11)
+azul = (40, 81, 214)
 
 
 #Configuración del jugador
@@ -66,6 +68,7 @@ puntoMoneda = 10        #Puntos ganados por cada moneda
 #Estados del juego
 playing = "playing"
 gameOver = "gameOver"
+intro = "intro"
 
 #Direcciones
 derecha = 0

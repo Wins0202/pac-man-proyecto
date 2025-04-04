@@ -35,7 +35,7 @@ class Game:
 
         #Se crea una variable para el bucle del juego
         self.running = True
-        self.estadoJuego = playing      #Iniciará el juego y cuando cambie a "GAMEOVER" lo terminará
+        self.estadoJuego = intro     #Iniciará el juego y cuando cambie a "GAMEOVER" lo terminará
 
         #Se crea paredes, monedas y jugador:
         self.walls = []
@@ -47,6 +47,26 @@ class Game:
 
         #Fuente para el texto de los puntos
         self.font = pygame.font.Font (None, 36)
+        self.fontBig = pygame.font.Font(None, 74)
+        
+    
+
+    def introScreen (self):
+        #Pantalla de inicio
+        tituloTexto = self.fontBig.render ("PACMAN", True, (amarillo))
+        startTexto = self.font.render("Pulsa ESPACIO para comenzar el jueguito", True, blanco)
+        controlTexto = self.font.render("Usa las flechitas para moverte", True, rojo)
+
+        tituloRect = tituloTexto.get_rect (center = (width/2, height/3))
+        startRect = startTexto.get_rect (center = (width/2, height/2))
+        controlRect = controlTexto.get_rect (center = (width/2, 2*height/3))
+
+        self.screen.fill (azul)
+        self.screen.blit (tituloTexto, tituloRect)
+        self.screen.blit (startTexto, startRect)
+        self.screen.blit (controlTexto, controlRect)
+
+
 
     def createLevel(self):
         #Creación del nivel a partir del diseño en "config"
@@ -73,6 +93,12 @@ class Game:
             #Si el usuario cierra la ventana
             if event.type == pygame.QUIT:
                 self.running = False        #Se cierra y se acaba el juego
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_SPACE:
+                    if self.estadoJuego == "intro":
+                        self.estadoJuego = "playing"
+
+        
         if self.estadoJuego == gameOver:    #Si es "GAMEOVER"
             self.running = False            #El juego se termina y deja de correr el programa
 
@@ -98,27 +124,29 @@ class Game:
     def draw(self): #Dibujar los elementos en la pantalla
         #Base de la pantalla de color negro
         self.screen.fill (negro)
+        if self.estadoJuego == intro :
+            self.introScreen ()
+        elif self.estadoJuego == playing:
+            #Dibujar las paredes
+            for wall in self.walls:
+                wall.draw(self.screen)
 
-        #Dibujar las paredes
-        for wall in self.walls:
-            wall.draw(self.screen)
+            #Dibujar las monedas
+            for coin in self.coins:
+                coin.draw (self.screen)
 
-        #Dibujar las monedas
-        for coin in self.coins:
-            coin.draw (self.screen)
+            #Dibuja al jugador y los fantasmas:
+            #Se dibuja el pac.man
+            self.player.draw(self.screen) 
 
-        #Dibuja al jugador y los fantasmas:
-        #Se dibuja el pac.man
-        self.player.draw(self.screen) 
-
-        #Se dibuja a los fantasmas
-        for ghost in self.ghosts:
-            ghost.draw (self.screen)
+            #Se dibuja a los fantasmas
+            for ghost in self.ghosts:
+                ghost.draw (self.screen)
 
 
-        #Dibujar el puntaje
-        score_text = self.font.render (f"Puntuación: {self.score} pts", True, blanco)
-        self.screen.blit (score_text, dest=(10, 10))
+            #Dibujar el puntaje
+            score_text = self.font.render (f"Puntitos: {self.score} pts", True, blanco)
+            self.screen.blit (score_text, dest=(10, 10))
 
         #Actualizar la pantalla
         pygame.display.flip() 
