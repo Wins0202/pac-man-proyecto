@@ -11,11 +11,12 @@ height = 600    #Altura de la ventana
 
 #Configuración de colores
 """Los colores son tomados del código de colores en RGB"""
-negro = (0, 0, 0)  
+negro = (199, 21, 133)  
 blanco = (255, 255, 255)
-amarillo = (255, 195, 0)   
-rojo = (255, 11, 11)
-azul = (40, 81, 214)
+amarillo = (255, 215, 0)   
+rojo = (219, 112, 147)
+azul = (219, 112, 147)
+negrito = (0, 0, 0)
 
 
 #Configuración del jugador
@@ -56,7 +57,7 @@ ghostSprites = {
 
 #Configuración de las paredes
 celdaTamaño = 32            #Tamaño de cada celda del laberinto
-colorPared = (131, 185, 255)  #Color rosa para las paredes
+colorPared = (255, 192, 203)  #Color rosa para las paredes
 
 
 #Configuración de las monedas

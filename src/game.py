@@ -47,24 +47,44 @@ class Game:
 
         #Fuente para el texto de los puntos
         self.font = pygame.font.Font (None, 36)
-        self.fontBig = pygame.font.Font(None, 74)
-        
+        self.fontBig = pygame.font.Font (None, 100)
+        self.fontMedium = pygame.font.Font (None, 50)
+        self.fontSmall = pygame.font.Font (None, 30)
     
 
     def introScreen (self):
         #Pantalla de inicio
+        #Descripción del texto
         tituloTexto = self.fontBig.render ("PACMAN", True, (amarillo))
-        startTexto = self.font.render("Pulsa ESPACIO para comenzar el jueguito", True, blanco)
-        controlTexto = self.font.render("Usa las flechitas para moverte", True, rojo)
+        startTexto = self.font.render("Dale al ESPACIO para comenzar merequetengue", True, blanco)
+        controlTexto = self.fontSmall.render("Usa las flechas para moverte de lado a lado como el pescao ><(((º>", True, rojo)
 
+        #Posición del rectángulo que contiene el texto
         tituloRect = tituloTexto.get_rect (center = (width/2, height/3))
         startRect = startTexto.get_rect (center = (width/2, height/2))
         controlRect = controlTexto.get_rect (center = (width/2, 2*height/3))
 
-        self.screen.fill (azul)
+        self.screen.fill (negro)
         self.screen.blit (tituloTexto, tituloRect)
         self.screen.blit (startTexto, startRect)
         self.screen.blit (controlTexto, controlRect)
+
+    def gameOverScreen(self):
+        #Pantalla de final de juego
+        #Descripción del texto
+        gameOverTexto = self.fontMedium.render("TE COMIÓ UN ESPÍRITU CHOCARRERO (T-T)", True, negro)
+        puntajeTexto = self.fontMedium.render (f"Tenías {self.score} puntitos. Creo en ti, reina.", True, blanco)
+        restartTexto = self.fontSmall.render ("Pulsa vengativamente ESPACIO para jugar otra y ganarle a los bichitos", True, rojo)
+
+        #Posición del restángulo que contiene el texto
+        gameOverRect = gameOverTexto.get_rect(center = (width/2, height/3))
+        puntajeRect = puntajeTexto.get_rect(center = (width/2, height/2))
+        restartRect = restartTexto.get_rect(center = (width/2, 2*height/3))
+
+        self.screen.fill (negrito)
+        self.screen.blit (gameOverTexto, gameOverRect)
+        self.screen.blit (puntajeTexto, puntajeRect)
+        self.screen.blit (restartTexto, restartRect)
 
 
 
@@ -97,10 +117,10 @@ class Game:
                 if event.key == pygame.K_SPACE:
                     if self.estadoJuego == "intro":
                         self.estadoJuego = "playing"
-
-        
-        if self.estadoJuego == gameOver:    #Si es "GAMEOVER"
-            self.running = False            #El juego se termina y deja de correr el programa
+                    elif self.estadoJuego == "gameOver":
+                        self.createLevel()
+                        self.score = 0
+                        self.estadoJuego = "playing"
 
 
     def update(self): 
@@ -113,6 +133,8 @@ class Game:
                 ghost.update (self.walls)
                 if self.player.rect.colliderect (ghost.rect):       #Si el jugador se choca con cualquier fantasma se acaba el juego
                     self.estadoJuego = gameOver
+                    self.coins = []
+                    self.ghosts = []
 
         #Actualizar monedas y comprobar colisiones
         for coin in self.coins [:]:     #Usar una copia de la lista para poder modificarla
@@ -126,6 +148,8 @@ class Game:
         self.screen.fill (negro)
         if self.estadoJuego == intro :
             self.introScreen ()
+        elif self.estadoJuego == gameOver:
+            self.gameOverScreen ()  
         elif self.estadoJuego == playing:
             #Dibujar las paredes
             for wall in self.walls:
