@@ -35,11 +35,13 @@ class Game:
 
         #Se crea una variable para el bucle del juego
         self.running = True
+        self.estadoJuego = playing      #Iniciará el juego y cuando cambie a "GAMEOVER" lo terminará
 
         #Se crea paredes, monedas y jugador:
         self.walls = []
         self.coins = []
         self.player = None
+        self.ghosts = []
         self.score = 0
         self.createLevel ()
 
@@ -56,17 +58,35 @@ class Game:
                     self.coins.append (Coin(col_index, row_index))  #Cuando la celdda sea "0" se crean monedas
                 elif cell == "P":
                     self.player = Player(col_index, row_index)       #Cuando en la celda sea "P" se crea el jugador
+                elif cell == "R":
+                    self.ghosts.append(Ghost(col_index, row_index, fantasmaTipo = "rojo"))       #Cuando en la celda sea "R" se crea el fantasma rojo
+                elif cell == "A":
+                    self.ghosts.append(Ghost(col_index, row_index, fantasmaTipo = "azul"))       #Cuando en la celda sea "A" se crea el fantasma azul
+                elif cell == "N":
+                    self.ghosts.append(Ghost(col_index, row_index, fantasmaTipo = "naranja"))    #Cuando en la celda sea "N" se crea el fantasma naranja
+                elif cell == "V":
+                    self.ghosts.append(Ghost(col_index, row_index, fantasmaTipo = "verde"))      #Cuando en la celda sea "V" se crea el fantasma verde
 
     def handleEvents (self):
         #Manejar los eventos (función de las teclas en pygame)
         for event in pygame.event.get (): #Para cada evento que ocurra, se obtiene el evento en proceso
             #Si el usuario cierra la ventana
             if event.type == pygame.QUIT:
-                self.running = False #Es decir, se cambia la varible True 'Linea31' a False
+                self.running = False        #Se cierra y se acaba el juego
+        if self.estadoJuego == gameOver:    #Si es "GAMEOVER"
+            self.running = False            #El juego se termina y deja de correr el programa
+
 
     def update(self): 
-        #Actualizar al jugador
-        self.player.update (self.walls)
+        #Actualizar al juego
+        if self.estadoJuego == playing:
+            self.player.update (self.walls)     #Actualiza el estado del pacman
+           
+            #Actualizar fantasmas
+            for ghost in self.ghosts:           #Para cada fantasma de la lista, se actulizaran las acciones de ese fantasma
+                ghost.update (self.walls)
+                if self.player.rect.colliderect (ghost.rect):       #Si el jugador se choca con cualquier fantasma se acaba el juego
+                    self.estadoJuego = gameOver
 
         #Actualizar monedas y comprobar colisiones
         for coin in self.coins [:]:     #Usar una copia de la lista para poder modificarla
@@ -87,8 +107,14 @@ class Game:
         for coin in self.coins:
             coin.draw (self.screen)
 
-        #Dibuja al jugador:
+        #Dibuja al jugador y los fantasmas:
+        #Se dibuja el pac.man
         self.player.draw(self.screen) 
+
+        #Se dibuja a los fantasmas
+        for ghost in self.ghosts:
+            ghost.draw (self.screen)
+
 
         #Dibujar el puntaje
         score_text = self.font.render (f"Puntuación: {self.score} pts", True, blanco)

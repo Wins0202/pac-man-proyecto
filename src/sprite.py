@@ -7,6 +7,9 @@ from config import *
 
 import pygame
 
+import random
+
+
 
 """Sirve para definir las acciones que puede realizar o que le pueden ocurrir a las paredes"""
 class Wall:
@@ -19,6 +22,8 @@ class Wall:
         pygame.draw.rect(screen, colorPared, self.rect)
 
 
+
+"""Sirve para definir las acciones que puede realizar o que le pueden ocurrir a las monedas"""
 class Coin:
     def __init__(self, x, y):
         #Posición de la moneda 
@@ -55,7 +60,177 @@ class Coin:
     def draw (self, screen):
         #Dibujar la moneda en pantalla
         screen.blit (self.frames[self.frameActual], self.rect)
+
+
+"""Sirve para definir las acciones que puede realizar o que le pueden ocurrir a los fantasmas"""
+class Ghost:
+    def __init__(self, x, y, fantasmaTipo):
+        #Posición inicial del jugador (centro de la pantalla):
+        self.x = x * celdaTamaño + celdaTamaño // 2     #En el eje "x" el fantasma está a la mitad del eje
+        self.y = y * celdaTamaño + celdaTamaño // 2     #En el eje "y" el fantasma está a la mitad del eje
+
+        #Tipo de fantasma y sus características
+        self.fantasmaTipo = fantasmaTipo                            #Define el tipo de fantasma
+        self.speed = fantasmaVelocidad [fantasmaTipo]               #Degine la velocidad de ese tipo de fantasma
+        self.direccionCambio = fantasmaDireccion [fantasmaTipo]     #Define el tiempo que tarda en cambiar de dirección
+
+        #Cargar sprite sheet del fantasma
+        self.sprite_sheet = cargarImagen (ghostSprites [fantasmaTipo]) #Carga una imagen desde la carpeta sprite
+
+         #Cargar todos los frames para animar:
+        self.frames = []
+        for i in range (fantasmaFrame):
+            #Creación de superficie para los frames
+            frame = pygame.Surface ((16, 16), pygame.SRCALPHA)
+            #Copiar el frame del sprite sheet:
+            frame.blit(self.sprite_sheet, dest = (0, 0), area =(i * 16, 0, 16, 16)) #Dependiendo de lo que valga "i" tomará la imagen del sprite y se multiplicará para dar tamaño
+            #Poner a escala la imagen:
+            frame = pygame.transform.scale (frame, size = (fantasmaTamaño, fantasmaTamaño))   #Se ponen a escala todos los frames
+            self.frames.append (frame) #Se le agrega a la variable "frames" la variable "frame"
+
+        #Variables de la animación:
+        self.frameActual = 0    #El frame "0" será la primera imagen del "sprite sheet"
+        self.timerAnimacion = pygame.time.get_ticks () #Cuando llegue a los 100 milisegundos se cambien al siguiente frame
+       
+        #Variables de movimiento
+        self.direction = random.randint (0, 3)  #Dara una dirección random entre lasdirecciones "0" siendo derecha y "3" abajo
+        self.direccionTimer = pygame.time.get_ticks ()
+        self.rect = self.frames [0].get_rect(center=(self.x, self.y)) 
+
+    def getNextDirection (self):
+        #Determinar la siguiente dirección según el tipo de fantasma
+        if self.fantasmaTipo == "rojo":
+            #Fantasma rojo elige una dirección aleatoria
+            return random.randint(0, 3)
+        elif self.fantasmaTipo == "blue":
+            #Fantasma azul alterna entre horizontal y vertical
+            if self.direction in [derecha, izquierda]:      #No irá hacia atrás, elige entre arriba y abajo cuando eliga entre derch o izq 
+                return random.choice([arriba, abajo])
+            else:
+                return random.choice ([derecha, izquierda])
+        elif self.fantasmaTipo == "naranja":
+            #Fantasma naranja se mueve en sentido horario
+            return (self.direction + 1)% 4
+        else:
+            #Fantasma verde se mueve en sentido antihorario
+            return (self.direction - 1) % 4
         
+        
+
+    def changeDirection (self, walls):
+        #Cambiar la dirección del fantasma según su tipo
+        if self.fantasmaTipo == "rojo":
+            #El rojo prueba todas las direcciones hasta encontrar una valida
+            direcciones = list(range(4))
+            random.shuffle (direcciones)                #Elige alguna de las 4 direcciones
+            for nuevaDir in direcciones:                #Comprueba si se puede mover en esa dirección
+                if self.puedeMoverse (nuevaDir, walls):
+                    self.direction = nuevaDir           #Si sí se puede mover, se dirige a ella
+                    break
+        
+        else:
+            #Los demás fantasmas siguen su patrón especifico
+            nuevaDir = self.getNextDirection ()
+            if self.puedeMoverse (nuevaDir, walls):
+                self.direction = nuevaDir
+            else:
+                #Si no pueden moverse en la dirección deseada, eligen aleatoria
+                self.direction = random.randint(0, 3)
+        
+        self.direccionTimer = pygame.time.get_ticks ()
+
+    def puedeMoverse (self, direction, walls):
+        #Comprobar si el fantasma puede moverse en esa dirección
+        dx = dy = 0
+        if direction == derecha:
+            dx = self.speed
+        elif direction == izquierda:
+            dx = -self.speed
+        elif direction == arriba:
+            dy = -self.speed
+        elif direction == abajo:
+            dy = self.speed
+
+        #Prueba si se puede mover derecha o izquierda, arriba o abajo
+        testRect = self.rect.copy ()   
+        testRect.x += dx
+        testRect.y += dy
+
+        #Comprueba si existe alguna colisión con las paredes
+        for wall in walls:
+            if testRect.colliderect (wall.rect):
+                return False                        #No se puede mover si se choca contra paredes
+        return True                                 #Se mueve si no hay choque con paredes
+
+    def move (self, walls):
+        #Mover fantasma y manejar colisiones
+        #Cambiar dirección después de cierto tiempo
+        tiempoActual = pygame.time.get_ticks ()
+        if tiempoActual - self.direccionTimer > self.direccionCambio: #mayor a 2000 milisegundos
+            self.changeDirection (walls)
+
+        #Calcular movimiento según la dirección
+        dx = dy = 0
+        if self.direction == derecha:
+            dx = self.speed
+        elif self.direction == izquierda:
+            dx = -self.speed
+        elif self.direction == arriba:
+            dy = -self.speed
+        elif self.direction == abajo:
+            dy = self.speed
+
+
+         #Comprobar colisión en la nueva posición
+        nuevoRect = self.rect.copy ()
+        nuevoRect.x += dx
+        nuevoRect.y += dy 
+
+        #Si hay colisión, cambia dirección
+        moverse = True
+        for wall in walls:
+            if nuevoRect.colliderect (wall.rect):   #Si el nuevoRect colisiona con alguna de las paredes
+                moverse = False
+                self.changeDirection(walls)              #Se cambia de posición
+                break
+
+        #Si no hay colisión, se actualiza la posición
+        if moverse:
+            self.x += dx
+            self.y += dy
+            self.rect.center = (self.x, self.y)     #Se actualiza la posición enre el eje X y el eje Y
+
+         #Mantener al jugador dentro de la pantalla:
+            #Moviemiento horizontal
+        if self.x > width - fantasmaTamaño: 
+            self.x = 0                       #Si el personaje entra por el lado derecho saldra por el lado izquierdo
+        elif self.x < 0:                       
+            self.x = width - fantasmaTamaño #Si el personaje sale por el lado izquierdo entrará por el lado derecho
+        
+            #Movimiento vertical
+        if self.y > height - fantasmaTamaño:
+            self.y = 0                          #Si el personaje sale por abajo, entrará por arriba
+        elif self.y < 0:
+            self.y = height - fantasmaTamaño   #Si el personaje sale por arriba entrará por abajo
+
+
+
+    def update (self, walls):
+        #Actualizar estado del fantasma
+        #Actualizar animación:
+        tiempoActual = pygame.time.get_ticks ()
+        if tiempoActual - self.timerAnimacion > fantasmaAnimación:
+            self.frameActual =(self.frameActual + 1) % fantasmaFrame
+            self.timerAnimacion = tiempoActual
+
+        #Actualizar movimiento
+        self.move (walls)
+
+    def draw (self, screen):
+        #Dibujar al fantasma en pantalla
+        screen.blit (self.frames[self.frameActual], self.rect)
+
+
 
 
 """Sirve para definir las acciones que puede realizar o que le pueden ocurrir al jugador"""
@@ -116,11 +291,11 @@ class Player:
 
         #Actualizar imagen en el movimiento:
             #Movimiento en horizontal
-        if self.dx > 0:    #Si la dirección es distinta de 0
-            self.direction = derecha                #Irá a la derecha
-            self.image = self.originalImagen   #La imagen será la original
-        elif self.dx < 0:    #Si la dirección es distinta de 1
-            self.direction = izquierda                  #Irá a la izquierda
+        if self.dx > 0:                              #Si la dirección es distinta de 0
+            self.direction = derecha                 #Irá a la derecha
+            self.image = self.originalImagen         #La imagen será la original
+        elif self.dx < 0:                            #Si la dirección es distinta de 1
+            self.direction = izquierda               #Irá a la izquierda
             self.image = pygame.transform.flip (self.originalImagen, flip_x=True, flip_y=False)  #La imagen que se mostrará será volteada
 
          #Movimiento en vertical:
