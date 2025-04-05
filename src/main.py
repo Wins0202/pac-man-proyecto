@@ -14,7 +14,8 @@ from game import Game #Se importa la clase "Game"
 def main ():
     try:
         #Se activa pygame
-        pygame.init()
+        pygame.init()           #Imágenes
+        pygame.mixer.init()     #Sonidos
 
         #crear y correr el juego
         game = Game() 

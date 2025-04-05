@@ -59,12 +59,15 @@ ghostSprites = {
 celdaTamaño = 32            #Tamaño de cada celda del laberinto
 colorPared = (255, 192, 203)  #Color rosa para las paredes
 
-
 #Configuración de las monedas
 monedaTamaño = 16       #Tamaño de las monedas
 monedaAnimacion = 200   #Velocidad de animación de las monedas
 monedaFrames = 8        #Número de frames de animación de las monedas
 puntoMoneda = 10        #Puntos ganados por cada moneda
+
+#Configuración de sonidos
+musicaVolumen = 0.5 #Volumen de la música de fondo
+sonidoVolumen = 0.3 #Volumen de los efectos de sonido
 
 #Estados del juego
 playing = "playing"
@@ -100,13 +103,23 @@ nivel = [
     "1111111111111100000111111"
     ]
 
+#nombre de archivos de sonido
+archivoSonidos = {
+    "musica": "pacman-song-inicio.mp3",
+    "waka": "pacman-waka-waka.mp3", 
+    "shakira": "Shakira - Waka Waka editada.mp3"
+}
+
 
 #Función para cargar imágenes
 def cargarImagen (name):
     return pygame.image.load (os.path.join("assets", "images", name)).convert_alpha()
 
 
-
+#Función para cargar sonidos
+def cargarSonido (name):
+    #Cargar un sonido desde la carpeta assets/music
+    return pygame.mixer.Sound(os.path.join("assets", "music", name))
 
 """Esta configuración no se van a usar porque el código funciona muy rápido con ese trozo de codigo en "move"
  #Movimiento en X:

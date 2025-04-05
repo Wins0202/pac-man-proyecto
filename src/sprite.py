@@ -258,7 +258,8 @@ class Player:
         self.frameActual = 0    #El frame "0" será la primera imagen del "sprite sheet"
         self.timerAnimacion = pygame.time.get_ticks () #Cuando llegue a los 100 milisegundos se cambien al siguiente frame
         self.movimiento = False #Para que no cambie de frame cuando esté quieto
-    
+        self.movimientoPasado = False #Para ayudar al loop del sonido del waka waka
+
         #Imagen actual del jugador
         self.originalImagen = self.framesAnimados [0]  #Cuando se vaya a la derecha se quede la imagen original
         self.image = self.originalImagen
@@ -387,6 +388,8 @@ class Player:
         
     
     def update (self, walls):
+        #Guardar estado de movimiento anterior
+        self.movimientoPasado = self.movimiento
         self.handleInput ()
         self.updateAnimation ()    #Actualizar animación
         self.updateImage ()        #Actualizar imagen
