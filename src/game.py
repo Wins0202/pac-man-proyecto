@@ -104,16 +104,22 @@ class Game:
         gameOverTexto = self.fontMedium.render("TE COMIÓ UN ESPÍRITU CHOCARRERO (T-T)", True, negro)
         puntajeTexto = self.fontMedium.render (f"Tenías {self.score} puntitos, corazón de melón", True, blanco)
         restartTexto = self.fontSmall.render ("Pulsa vengativamente ESPACIO para jugar otra y ganarle a los bichitos", True, rojo)
+        recordsTexto = self.fontSuperSmall.render (f"Las puntuaciones anteriores fueron: {load_or_initialize_json()["records"]}", True, rojo)
 
         #Posición del restángulo que contiene el texto
         gameOverRect = gameOverTexto.get_rect(center = (width/2, height/3))
         puntajeRect = puntajeTexto.get_rect(center = (width/2, height/2))
         restartRect = restartTexto.get_rect(center = (width/2, 2*height/3))
+        recordsRect = recordsTexto.get_rect()
+
+        recordsRect.bottomright=(width-10, height-50)
 
         self.screen.fill (negrito)
         self.screen.blit (gameOverTexto, gameOverRect)
         self.screen.blit (puntajeTexto, puntajeRect)
         self.screen.blit (restartTexto, restartRect)
+        self.screen.blit (recordsTexto, recordsRect)
+
 
 
     def victoryScreen(self):
