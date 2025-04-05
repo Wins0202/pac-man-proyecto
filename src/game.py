@@ -18,6 +18,7 @@ from config import * #Importación de la librería creada para las configuracion
 
 from sprite import * #Importación de la librería creada para los movimientos
 
+from utils import * #Importación de la librería creada para json
 
 """Este conjunto de líneas sirve para que se inicie el juego. Definiremos las funciones para el
 control básico del juego"""
@@ -28,7 +29,7 @@ class Game:
     
         #Se crea la ventana:
         self.screen = pygame.display.set_mode ((width, height)) #activa el ancho y el alto de la ventana que se había importado de la pestaña creada
-        pygame.display.set_caption ("PAC-MAN") #Nombre que tendrá la ventanilla cuando se abrá para jugar
+        pygame.display.set_caption ("PAC-MAN EXTREM!!") #Nombre que tendrá la ventanilla cuando se abrá para jugar
 
         #Se establece un reloj para controlar la velocidad del juego
         self.clock = pygame.time.Clock ()
@@ -41,11 +42,13 @@ class Game:
         self.musica = cargarSonido (archivoSonidos["musica"])
         self.wakaSound = cargarSonido (archivoSonidos["waka"])
         self.shakira = cargarSonido (archivoSonidos ["shakira"])
+        self.quede = cargarSonido (archivoSonidos["quede"])
 
         #Ajustar el volumen
         self.musica.set_volume (musicaVolumen)
         self.wakaSound.set_volume (sonidoVolumen)
         self.shakira.set_volume (musicaVolumen)                        
+        self.quede.set_volume (musicaVolumen)
 
         #Se crea paredes, monedas y jugador:
         self.walls = []
@@ -60,26 +63,37 @@ class Game:
         self.fontBig = pygame.font.Font (None, 100)
         self.fontMedium = pygame.font.Font (None, 50)
         self.fontSmall = pygame.font.Font (None, 30)
+        self.fontSuperSmall = pygame.font.Font (None, 24)
     
+        #Puntuaciones
+        self.actualScore = 0
+        self.highScore = 0
+
+
         #iniciar música de fondo
         self.musica.play (-1)    #"-1" es para que el sonido corra repetidamente
 
     def introScreen (self):
         #Pantalla de inicio
         #Descripción del texto
-        tituloTexto = self.fontBig.render ("PACMAN", True, (amarillo))
+        tituloTexto = self.fontBig.render ("PAC-MAN", True, (amarillo))
         startTexto = self.font.render("Dale al ESPACIO para comenzar merequetengue", True, blanco)
         controlTexto = self.fontSmall.render("Usa las flechas para moverte de lado a lado como el pescao ><(((º>", True, rojo)
+        subTexto = self.fontSuperSmall.render("Por falta de animación, este juego no tiene power-up. Si te tocan te mueres :-)", True, negrito)
 
         #Posición del rectángulo que contiene el texto
         tituloRect = tituloTexto.get_rect (center = (width/2, height/3))
         startRect = startTexto.get_rect (center = (width/2, height/2))
         controlRect = controlTexto.get_rect (center = (width/2, 2*height/3))
+        subRect = subTexto.get_rect ()
+
+        subRect.bottomright=(width-10, height-50)
 
         self.screen.fill (negro)
         self.screen.blit (tituloTexto, tituloRect)
         self.screen.blit (startTexto, startRect)
         self.screen.blit (controlTexto, controlRect)
+        self.screen.blit (subTexto, subRect)
 
     def gameOverScreen(self):
         #Pantalla de final de juego
@@ -97,6 +111,9 @@ class Game:
         self.screen.blit (gameOverTexto, gameOverRect)
         self.screen.blit (puntajeTexto, puntajeRect)
         self.screen.blit (restartTexto, restartRect)
+
+        safeRecord (self.score)
+
 
     def victoryScreen(self):
        #Pantalla de victoria
@@ -148,6 +165,9 @@ class Game:
                     elif self.estadoJuego in ["gameOver", "victory"]:
                         #Se crea un nuevo nivel con los valores restaurados cuando acaba el juego
                         self.createLevel()
+                        self.actualScore = self.score
+                        if self.score > self.highScore:
+                            self.highScore = self.score
                         self.score = 0
                         self.estadoJuego = "playing"
                         self.wakaSound.stop ()
@@ -160,6 +180,7 @@ class Game:
             self.wakaSound.stop ()             #Pare el sonido de waka waka cuando mueres o ganas
         if self.estadoJuego in ["playing"]:
             self.shakira.stop ()               #Pare el sonido de shakira cuando se vuelve a iniciar el juego
+            self.quede.stop ()
         if self.estadoJuego == playing:
             self.player.update (self.walls)     #Actualiza el estado del pacman
             self.musica.stop ()           
@@ -178,6 +199,7 @@ class Game:
                     self.estadoJuego = gameOver
                     self.coins = []
                     self.ghosts = []
+                    self.quede.play ()
 
         #Actualizar monedas y comprobar colisiones
         for coin in self.coins [:]:     #Usar una copia de la lista para poder modificarla

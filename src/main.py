@@ -17,6 +17,7 @@ def main ():
         pygame.init()           #Imágenes
         pygame.mixer.init()     #Sonidos
 
+
         #crear y correr el juego
         game = Game() 
         game.run () #Ejecuta el juego
