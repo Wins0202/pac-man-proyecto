@@ -73,7 +73,7 @@ class Game:
         #Pantalla de final de juego
         #Descripción del texto
         gameOverTexto = self.fontMedium.render("TE COMIÓ UN ESPÍRITU CHOCARRERO (T-T)", True, negro)
-        puntajeTexto = self.fontMedium.render (f"Tenías {self.score} puntitos. Creo en ti, reina.", True, blanco)
+        puntajeTexto = self.fontMedium.render (f"Tenías {self.score} puntitos", True, blanco)
         restartTexto = self.fontSmall.render ("Pulsa vengativamente ESPACIO para jugar otra y ganarle a los bichitos", True, rojo)
 
         #Posición del restángulo que contiene el texto
@@ -86,6 +86,22 @@ class Game:
         self.screen.blit (puntajeTexto, puntajeRect)
         self.screen.blit (restartTexto, restartRect)
 
+    def victoryScreen(self):
+       #Pantalla de victoria
+        #Descripción del texto
+        victoriaTexto = self.fontBig.render("¡¡GANASTE!! \(^-^)/", True, negro)
+        puntajeTexto = self.font.render (f"Conseguiste {self.score} puntitos y no te mataron en el intento", True, blanco)
+        restartTexto = self.fontSmall.render ("Pulsa con felicidad ESPACIO para volver a jugar", True, rojo)
+
+        #Posición del restángulo que contiene el texto
+        victoriaRect = victoriaTexto.get_rect(center = (width/2, height/3))
+        puntajeRect = puntajeTexto.get_rect(center = (width/2, height/2))
+        restartRect = restartTexto.get_rect(center = (width/2, 2*height/3))
+
+        self.screen.fill (amarillo)
+        self.screen.blit (victoriaTexto, victoriaRect)
+        self.screen.blit (puntajeTexto, puntajeRect)
+        self.screen.blit (restartTexto, restartRect) 
 
 
     def createLevel(self):
@@ -117,7 +133,8 @@ class Game:
                 if event.key == pygame.K_SPACE:
                     if self.estadoJuego == "intro":
                         self.estadoJuego = "playing"
-                    elif self.estadoJuego == "gameOver":
+                    elif self.estadoJuego in ["gameOver", "victory"]:
+                        #Se crea un nuevo nivel con los valores restaurados cuando acaba el juego
                         self.createLevel()
                         self.score = 0
                         self.estadoJuego = "playing"
@@ -142,6 +159,8 @@ class Game:
             if self.player.rect.colliderect (coin.rect):    #Si el jugador colisiona con una moneda
                 self.coins.remove (coin)                    #La moneda se quita de la pantalla
                 self.score += puntoMoneda                   #Se suma el puntaje de esa moneda
+                if len (self.coins) == 0:
+                   self.estadoJuego = "victory" 
 
     def draw(self): #Dibujar los elementos en la pantalla
         #Base de la pantalla de color negro
@@ -150,6 +169,8 @@ class Game:
             self.introScreen ()
         elif self.estadoJuego == gameOver:
             self.gameOverScreen ()  
+        elif self.estadoJuego == victory:
+            self.victoryScreen ()
         elif self.estadoJuego == playing:
             #Dibujar las paredes
             for wall in self.walls:
