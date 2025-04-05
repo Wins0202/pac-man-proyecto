@@ -26,7 +26,7 @@ control básico del juego"""
 
 class Game:
     def __init__ (self): 
-    
+        self.score_saved = False
         #Se crea la ventana:
         self.screen = pygame.display.set_mode ((width, height)) #activa el ancho y el alto de la ventana que se había importado de la pestaña creada
         pygame.display.set_caption ("PAC-MAN EXTREM!!") #Nombre que tendrá la ventanilla cuando se abrá para jugar
@@ -97,6 +97,9 @@ class Game:
 
     def gameOverScreen(self):
         #Pantalla de final de juego
+        if not self.score_saved:
+            safeRecord(self.score)
+            self.score_saved = True
         #Descripción del texto
         gameOverTexto = self.fontMedium.render("TE COMIÓ UN ESPÍRITU CHOCARRERO (T-T)", True, negro)
         puntajeTexto = self.fontMedium.render (f"Tenías {self.score} puntitos, corazón de melón", True, blanco)
@@ -112,10 +115,12 @@ class Game:
         self.screen.blit (puntajeTexto, puntajeRect)
         self.screen.blit (restartTexto, restartRect)
 
-        safeRecord (self.score)
-
 
     def victoryScreen(self):
+        #Pantalla de final de juego
+        if not self.score_saved:
+            safeRecord(self.score)
+            self.score_saved = True
        #Pantalla de victoria
         #Descripción del texto
         victoriaTexto = self.fontBig.render("¡¡GANASTE!! (^-^)", True, negro)
@@ -162,6 +167,7 @@ class Game:
                 if event.key == pygame.K_SPACE:
                     if self.estadoJuego == "intro":
                         self.estadoJuego = "playing"
+                        self.score_saved = False
                     elif self.estadoJuego in ["gameOver", "victory"]:
                         #Se crea un nuevo nivel con los valores restaurados cuando acaba el juego
                         self.createLevel()
@@ -171,6 +177,7 @@ class Game:
                         self.score = 0
                         self.estadoJuego = "playing"
                         self.wakaSound.stop ()
+                        self.score_saved = False
                         
 
 
