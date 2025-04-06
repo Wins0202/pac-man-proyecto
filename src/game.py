@@ -77,7 +77,7 @@ class Game:
         #Pantalla de inicio
         #Descripción del texto
         tituloTexto = self.fontBig.render ("PAC-MAN", True, (amarillo))
-        startTexto = self.font.render("Dale al ESPACIO para comenzar merequetengue", True, blanco)
+        startTexto = self.font.render("Dale al ESPACIO para comenzar el merequetengue", True, blanco)
         controlTexto = self.fontSmall.render("Usa las flechas para moverte de lado a lado como el pescao ><(((º>", True, rojo)
         subTexto = self.fontSuperSmall.render("Por falta de animación, este juego no tiene power-up. Si te tocan te mueres :-)", True, negrito)
 
